@@ -1,6 +1,6 @@
 ---
 name: build-and-deploy
-description: Build and deploy this Next.js LangChain retrieval application with Supabase vector store. Use when building, deploying, setting up database, or preparing the project for production. Triggers on requests to build, deploy, setup vector store, or publish.
+description: Build and deploy this Next.js LangChain retrieval application with Supabase vector store. Use when building, deploying, setting up vector store, or preparing the project for production.
 ---
 
 # Build and Deploy LangChain Retrieval
@@ -9,33 +9,35 @@ description: Build and deploy this Next.js LangChain retrieval application with 
 
 Build and deploy the LangChain.js retrieval application. This Next.js project provides an AI-powered document Q&A system using retrieval-augmented generation (RAG) with Supabase vector store.
 
-## Environment Variables
-
-All required environment variables are pre-configured in CCVM and available directly:
-- `OPENAI_API_KEY` - OpenAI API key for LLM and embeddings
-- `SUPABASE_URL` - Supabase project URL
-- `SUPABASE_PRIVATE_KEY` - Supabase service role key
-- `VERCEL_TOKEN` - For Vercel CLI authentication
-- `NETLIFY_AUTH_TOKEN` - For Netlify CLI authentication
-
 ## Workflow
 
 ### 1. Setup Environment Variables
 
+**Read `.env.example` to see all required variables:**
+
 ```bash
-cp .env.example .env
+cat .env.example
 ```
 
-Then populate `.env` with values from environment:
+**Create `.env` by reading values from current environment:**
 
-Example:
+For each variable in `.env.example`, read the value from the current environment and write to `.env`. Example approach:
+
 ```bash
-cat > .env << EOF
-OPENAI_API_KEY="${OPENAI_API_KEY}"
-SUPABASE_URL="${SUPABASE_URL}"
-SUPABASE_PRIVATE_KEY="${SUPABASE_PRIVATE_KEY}"
-EOF
+# Read .env.example and create .env with values from current environment
+while IFS= read -r line || [[ -n "$line" ]]; do
+  # Skip comments and empty lines
+  [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
+  # Extract variable name (before = sign)
+  var_name=$(echo "$line" | cut -d'=' -f1)
+  # Get value from environment
+  var_value="${!var_name}"
+  # Write to .env
+  echo "${var_name}=${var_value}" >> .env
+done < .env.example
 ```
+
+Or manually inspect `.env.example` and create `.env` with the required values from environment variables.
 
 ### 2. Setup Supabase Vector Store
 
@@ -113,7 +115,8 @@ netlify deploy --prod
 
 - **Supabase Required:** Must setup Supabase project with pgvector extension
 - **Vector Store Setup:** Run SQL migration before using the app
-- **API Keys Required:** Requires OpenAI API key for embeddings and LLM
+- **Environment Variables:** All values come from current environment - inspect `.env.example` for required variables
+- **OpenAI for Embeddings:** OPENAI_API_KEY is always required for vector embeddings
 - **No Dev Server:** Never run `yarn dev` in VM environment
 
 ## Features
