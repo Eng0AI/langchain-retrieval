@@ -3,9 +3,9 @@ import { Message as VercelChatMessage, StreamingTextResponse } from "ai";
 
 import { createClient } from "@supabase/supabase-js";
 
-import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { SupabaseVectorStore } from "@langchain/community/vectorstores/supabase";
+import { getChatModel, getEmbeddings } from "@/lib/ai/provider";
 import { Document } from "@langchain/core/documents";
 import { RunnableSequence } from "@langchain/core/runnables";
 import {
@@ -74,16 +74,13 @@ export async function POST(req: NextRequest) {
     const previousMessages = messages.slice(0, -1);
     const currentMessageContent = messages[messages.length - 1].content;
 
-    const model = new ChatOpenAI({
-      model: "gpt-4o-mini",
-      temperature: 0.2,
-    });
+    const model = getChatModel({ temperature: 0.2 });
 
     const client = createClient(
       process.env.SUPABASE_URL!,
       process.env.SUPABASE_PRIVATE_KEY!,
     );
-    const vectorstore = new SupabaseVectorStore(new OpenAIEmbeddings(), {
+    const vectorstore = new SupabaseVectorStore(getEmbeddings(), {
       client,
       tableName: "documents",
       queryName: "match_documents",
